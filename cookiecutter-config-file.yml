@@ -1,0 +1,13 @@
+# This file contains values from Cookiecutter
+
+default_context:
+  project_name: "gherald"
+  project_description: "A python package to assess the risk of a change during code review."
+  organization: "University of Waterloo"
+  license: "MIT"
+  minimal_python_version: 3.9
+  github_name: "filipe-cogo"
+  email: "yuxueyao0130@gmail.com"
+  version: "0.1.0"
+  line_length: "120"
+  create_example_template: "cli"
