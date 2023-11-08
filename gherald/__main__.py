@@ -8,7 +8,6 @@ import typer
 from rich.console import Console
 
 from gherald import version
-from gherald.example import hello
 
 
 class Color(str, Enum):
@@ -29,7 +28,6 @@ console = Console()
 
 
 def version_callback(print_version: bool) -> None:
-    """Print the version of the package."""
     if print_version:
         console.print(f"[yellow]gherald[/] version: [bold blue]{version}[/]")
         raise typer.Exit()
@@ -55,11 +53,10 @@ def main(
         help="Prints the version of the gherald package.",
     ),
 ) -> None:
-    """Print a greeting with a giving name."""
     if color is None:
         color = choice(list(Color))
 
-    greeting: str = hello(name)
+    greeting: str = "Hello"
     console.print(f"[bold {color}]{greeting}[/]")
 
 

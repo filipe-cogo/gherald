@@ -1,7 +1,6 @@
 # type: ignore[attr-defined]
 """A python package to assess the risk of a change during code review."""
 
-import sys
 from importlib import metadata as importlib_metadata
 
 
