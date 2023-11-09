@@ -29,23 +29,15 @@ or install with `Poetry`
 poetry add gherald
 ```
 
-Then you can run
+## Usage 
 
-```bash
-gherald --help
-```
-
-or with `Poetry`:
-
-```bash
-poetry run gherald --help
-```
+See `tests` folder for usage examples.
 
 ## Development
 
-### Initialize your code
+### Initialize code
 
-1. Initialize `git` inside your repo:
+1. Initialize `git` inside the repo:
 
 ```bash
 cd gherald && git init
@@ -82,7 +74,7 @@ git push -u origin main
 
 ### Poetry
 
-Want to know more about Poetry? Check [its documentation](https://python-poetry.org/docs/).
+Check [its documentation](https://python-poetry.org/docs/).
 
 <details>
 <summary>Details about Poetry</summary>
@@ -100,9 +92,9 @@ etc
 
 ### Building and releasing
 
-Building a new version of the application:
+Building a new version of the package:
 
-- Bump the version of your package `poetry version <version>`. You can pass the new version explicitly, or a rule such as `major`, `minor`, or `patch`. For more details, refer to the [Semantic Versions](https://semver.org/) standard.
+- Bump the version of the package `poetry version <version>`. You can pass the new version explicitly, or a rule such as `major`, `minor`, or `patch`. For more details, refer to the [Semantic Versions](https://semver.org/) standard.
 - Make a commit to `GitHub`.
 - Create a `GitHub release`.
 - And... publish 🙂 `poetry publish --build`
@@ -140,7 +132,7 @@ Install requirements:
 make install
 ```
 
-Pre-commit hooks coulb be installed after `git init` via
+Pre-commit hooks can be installed after `git init` via
 
 ```bash
 make pre-commit-install
@@ -226,7 +218,7 @@ make test
 <summary>7. All linters</summary>
 <p>
 
-Of course there is a command to ~~rule~~ run all linters in one:
+There is a command to run all linters in one:
 
 ```bash
 make lint
