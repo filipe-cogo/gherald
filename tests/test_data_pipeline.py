@@ -5,6 +5,7 @@ import pytest
 from git.repo.base import Repo
 
 from gherald.data_pipeline import (
+    data_filtering,
     extract_bugs_from_jira,
     extract_commit_code_changes,
     extract_commits_from_vcs,
@@ -78,6 +79,22 @@ def commit_code_changes_information_output_file(tmp_path_factory):
     return buggy_commits_file
 
 
+@pytest.fixture(scope="session")
+def filtered_commits_output_file(tmp_path_factory):
+    file_name = "apache_commons_lang_commits_filtered.csv"
+    filtered_commits_file = tmp_path_factory.mktemp("filtered_commits") / file_name
+
+    return filtered_commits_file
+
+
+@pytest.fixture(scope="session")
+def filtered_fixing_commits_output_file(tmp_path_factory):
+    file_name = "apache_commons_lang_bug_fixing_commit_ids_filtered.csv"
+    filtered_fixing_commits_file = tmp_path_factory.mktemp("filtered_fixing_commits") / file_name
+
+    return filtered_fixing_commits_file
+
+
 def test_fetch_bugs(apache_commons_lang, dec_22, bugs_output_file):
     extract_bugs_from_jira(bugs_output_file, apache_commons_lang, dec_22)
     assert open(bugs_output_file) is not None
@@ -136,4 +153,23 @@ def test_extract_commit_code_changes_information(commit_code_changes_information
         assert len(list(code_changes_commits)) > 0
 
 
-# TODO: write tests for `data_pipeline.data_filtering()`
+def test_data_filtering(
+    filtered_commits_output_file,
+    filtered_fixing_commits_output_file,
+    commits_output_file,
+    bug_inducing_commits_output_file,
+    commit_code_changes_information_output_file,
+):
+
+    data_filtering(
+        filtered_commits_output_file,
+        filtered_fixing_commits_output_file,
+        commits_output_file,
+        bug_inducing_commits_output_file,
+        commit_code_changes_information_output_file,
+    )
+
+    with open(filtered_commits_output_file, newline="") as f:
+        filtered_commits = csv.reader(f, quoting=csv.QUOTE_NONE)
+
+        assert len(list(filtered_commits)) > 0
