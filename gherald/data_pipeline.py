@@ -14,6 +14,8 @@ from nltk.tokenize import word_tokenize
 from pandarallel import pandarallel
 from pydriller import Git, Repository
 
+pandarallel.initialize()
+
 JIRA_API_URL = "https://issues.apache.org/jira/rest/api/2/search"
 
 
@@ -437,8 +439,6 @@ def data_filtering(
     commits_df["buggy"] = commits_df["buggy"].fillna(0)
 
     # F1
-    pandarallel.initialize()
-
     code_df = pd.read_csv(commit_code_changes_file)
     code_df.code_changes = code_df.code_changes.apply(ast.literal_eval)
 
