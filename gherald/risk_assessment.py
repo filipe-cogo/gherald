@@ -626,7 +626,12 @@ def risk_assessment(
 
 
 def prepare_experiment_commit_data(
-    data_file_df, data_method_df, experiment_changes_out_file, experiment_files_out_file, experiment_methods_out_file, experiment_data
+    data_file_df,
+    data_method_df,
+    experiment_changes_out_file,
+    experiment_files_out_file,
+    experiment_methods_out_file,
+    experiment_data,
 ):
     experiment_files_df = data_file_df[data_file_df.id.isin(experiment_data["id"])]
     experiment_files_df = pd.merge(experiment_files_df, pd.DataFrame(experiment_data), how="left", on=["id"])
