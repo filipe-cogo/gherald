@@ -626,29 +626,17 @@ def risk_assessment(
 
 
 def prepare_experiment_commit_data(
-    data_file_df, data_method_df, experiment_changes_out_file, experiment_files_out_file, experiment_methods_out_file
+    data_file_df,
+    data_method_df,
+    experiment_changes_out_file,
+    experiment_files_out_file,
+    experiment_methods_out_file,
+    experiment_data,
 ):
-    experiment_commits = [
-        "06aea7e74cfe4a1578cb76672f1562132090c205",
-        "9397608dd35a335d5e14813c0923f9419782980a",
-        "d844d1eb5e5b530a82b77302f1f284fd2f924be3",
-        "c1f9320476ab9e5f262fdf8a5b3e1ff70199aed8",
-        "5acf310d08b2bc5182cf936616ef70938cb2c499",
-        # clean
-        "16774d1c0d6d8aa4579f7c96b3fdb78bd118e5aa",
-        "188933345a7ebad94f74ba0fb6e8bc6eb99552a6",
-        "65392be352be6ccc8acf24405d819f60cd0d1a22",
-        "4f85c164a1a4eeb8813b61cf46132fb91971b323",
-        "eaa9269ac80c2a957cabed0c46173149a4137c24",
-    ]
-    practice = [0, 0, 0, 0, 0, 1, 1, 1, 0, 0]
-    bug_count = [1.0, 1.0, 2.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    experiment_data = {"id": experiment_commits, "practice": practice, "bug_count": bug_count}
-
-    experiment_files_df = data_file_df[data_file_df.id.isin(experiment_commits)]
+    experiment_files_df = data_file_df[data_file_df.id.isin(experiment_data["id"])]
     experiment_files_df = pd.merge(experiment_files_df, pd.DataFrame(experiment_data), how="left", on=["id"])
     experiment_files_df = experiment_files_df.rename(columns={"id": "commit_id"})
-    experiment_methods_df = data_method_df[data_method_df.id.isin(experiment_commits)]
+    experiment_methods_df = data_method_df[data_method_df.id.isin(experiment_data["id"])]
     experiment_methods_df = pd.merge(experiment_methods_df, pd.DataFrame(experiment_data), how="left", on=["id"])
     experiment_methods_df = experiment_methods_df.rename(columns={"id": "commit_id"})
 
