@@ -42,7 +42,6 @@ pandas = "^2.1.2"
 GitPython = "^3.1.40"
 pandarallel = "^1.6.5"
 nltk = "^3.8.1"
-scipy = "^1.11.4"
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.7.1"

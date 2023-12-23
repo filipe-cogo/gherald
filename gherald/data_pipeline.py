@@ -14,7 +14,6 @@ import requests
 from nltk.tokenize import word_tokenize
 from pandarallel import pandarallel
 from pydriller import Git, Repository
-from scipy.stats import median_abs_deviation
 
 pandarallel.initialize()
 nltk.download("punkt")
