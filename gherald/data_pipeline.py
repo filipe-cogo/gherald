@@ -490,14 +490,20 @@ def data_filtering(
     F5_df = commits_temp_df.groupby("bug_fixing_commit_id").size().reset_index(name="fix_count")
 
     F5_median = F5_df["fix_count"].median()
-    F5_mad = F5_df["fix_count"].mad()
+    F5_mean = F5_df['fix_count'].mean()
+    F5_df['diff'] = F5_df['fix_count'].apply(lambda x: abs(x - F5_mean))
+    F5_mad = F5_df['diff'].mean()
+    F5_df = F5_df.drop(columns=['diff'])
     F5_upper_mad = F5_median + F5_mad
 
     commits_temp_df = commits_filtered_df[commits_filtered_df["bug_fixing_commit_id"].notnull()]
     F6_df = commits_temp_df.groupby("id").size().reset_index(name="bug_count")
 
     F6_median = F6_df["bug_count"].median()
-    F6_mad = F6_df["bug_count"].mad()
+    F6_mean = F6_df['bug_count'].mean()
+    F6_df['diff'] = F6_df['bug_count'].apply(lambda x: abs(x - F6_mean))
+    F6_mad = F6_df['diff'].mean()
+    F6_df = F6_df.drop(columns=['diff'])
     F6_upper_mad = F6_median + F6_mad
 
     # F5
