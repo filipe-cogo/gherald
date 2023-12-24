@@ -359,7 +359,7 @@ def data_filtering(
         bug_inducing_ids = set()
         for _, ids in obj.items():
             for value in ids:
-                id = value[0]
+                id = value
                 if id not in bug_inducing_ids:
                     bug_inducing_ids.add(id)
         return list(bug_inducing_ids)
