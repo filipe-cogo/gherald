@@ -13,6 +13,13 @@ from gherald.data_pipeline import (
     extract_modified_files_commit,
     merge_its_vcs_data,
 )
+from gherald.risk_assessment import (
+    prepare_experiment_commit_data,
+    preprocess_data,
+    read_commit_code,
+    read_filtered_commits,
+    risk_assessment,
+)
 
 APACHE_COMMONS_REPO_URL = "https://github.com/apache/commons-lang"
 
@@ -173,3 +180,162 @@ def test_data_filtering(
         filtered_commits = csv.reader(f, quoting=csv.QUOTE_NONE)
 
         assert len(list(filtered_commits)) > 0
+
+
+@pytest.fixture(scope="session")
+def file_risk_data_output_file(tmp_path_factory):
+    file_name = "apache_commons_lang_file_risk_data.csv"
+    risk_data_file = tmp_path_factory.mktemp("risk") / file_name
+
+    return risk_data_file
+
+
+@pytest.fixture(scope="session")
+def method_risk_data_output_file(tmp_path_factory):
+    file_name = "apache_commons_lang_method_risk_data.csv"
+    risk_data_file = tmp_path_factory.mktemp("risk") / file_name
+
+    return risk_data_file
+
+
+@pytest.fixture(scope="session")
+def experiment_changes_out_file(tmp_path_factory):
+    file_name = "apache_commons_lang_experiment_changes.csv"
+    risk_data_file = tmp_path_factory.mktemp("risk") / file_name
+
+    return risk_data_file
+
+
+@pytest.fixture(scope="session")
+def experiment_files_out_file(tmp_path_factory):
+    file_name = "apache_commons_lang_experiment_files.csv"
+    risk_data_file = tmp_path_factory.mktemp("risk") / file_name
+
+    return risk_data_file
+
+
+@pytest.fixture(scope="session")
+def experiment_methods_out_file(tmp_path_factory):
+    file_name = "apache_commons_lang_experiment_methods.csv"
+    risk_data_file = tmp_path_factory.mktemp("risk") / file_name
+
+    return risk_data_file
+
+
+@pytest.fixture
+def experiment_data():
+    experiment_commits = [
+        "06aea7e74cfe4a1578cb76672f1562132090c205",
+        "9397608dd35a335d5e14813c0923f9419782980a",
+        "d844d1eb5e5b530a82b77302f1f284fd2f924be3",
+        "c1f9320476ab9e5f262fdf8a5b3e1ff70199aed8",
+        "5acf310d08b2bc5182cf936616ef70938cb2c499",
+        "16774d1c0d6d8aa4579f7c96b3fdb78bd118e5aa",
+        "188933345a7ebad94f74ba0fb6e8bc6eb99552a6",
+        "65392be352be6ccc8acf24405d819f60cd0d1a22",
+        "4f85c164a1a4eeb8813b61cf46132fb91971b323",
+        "eaa9269ac80c2a957cabed0c46173149a4137c24",
+    ]
+    practice = [0, 0, 0, 0, 0, 1, 1, 1, 0, 0]
+    bug_count = [1.0, 1.0, 2.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    experiment_data = {"id": experiment_commits, "practice": practice, "bug_count": bug_count}
+    return experiment_data
+
+
+def test_read_filtered_commits(commits_output_file, filtered_commits_output_file):
+    commits_df, commits_filtered_df = read_filtered_commits(commits_output_file, filtered_commits_output_file)
+    assert not commits_df.empty
+    assert not commits_filtered_df.empty
+
+
+def test_read_commit_code(commit_code_changes_information_output_file):
+    code_df = read_commit_code(commit_code_changes_information_output_file)
+    assert not code_df.empty
+
+
+def test_preprocess_data(
+    commits_output_file,
+    filtered_commits_output_file,
+    bug_inducing_commits_output_file,
+    modified_files_commit_output_file,
+):
+    (
+        bug_inducing_files,
+        bug_inducing_methods,
+        commits_df_files_expanded,
+        commits_df_methods_expanded,
+        data_df,
+    ) = preprocess_data(
+        commits_output_file,
+        filtered_commits_output_file,
+        bug_inducing_commits_output_file,
+        modified_files_commit_output_file,
+    )
+    assert not bug_inducing_files.empty
+    assert not bug_inducing_methods.empty
+    assert not commits_df_files_expanded.empty
+    assert not commits_df_methods_expanded.empty
+    assert not data_df.empty
+
+
+def test_risk_assessment(
+    commits_output_file,
+    filtered_commits_output_file,
+    commit_code_changes_information_output_file,
+    bug_inducing_commits_output_file,
+    modified_files_commit_output_file,
+    file_risk_data_output_file,
+    method_risk_data_output_file,
+):
+    risk_assessment(
+        commits_output_file,
+        filtered_commits_output_file,
+        commit_code_changes_information_output_file,
+        bug_inducing_commits_output_file,
+        modified_files_commit_output_file,
+        file_risk_data_output_file,
+        method_risk_data_output_file,
+    )
+
+    with open(file_risk_data_output_file, newline="") as f:
+        risk_data = csv.reader(f, quoting=csv.QUOTE_NONE)
+
+        assert len(list(risk_data)) > 0
+
+    with open(method_risk_data_output_file, newline="") as f:
+        risk_data = csv.reader(f, quoting=csv.QUOTE_NONE)
+
+        assert len(list(risk_data)) > 0
+
+
+def test_prepare_experiment_commit_data(
+    file_risk_data_output_file,
+    method_risk_data_output_file,
+    experiment_changes_out_file,
+    experiment_files_out_file,
+    experiment_methods_out_file,
+    experiment_data,
+):
+    prepare_experiment_commit_data(
+        file_risk_data_output_file,
+        method_risk_data_output_file,
+        experiment_changes_out_file,
+        experiment_files_out_file,
+        experiment_methods_out_file,
+        experiment_data,
+    )
+
+    with open(experiment_changes_out_file, newline="") as f:
+        risk_data = csv.reader(f, quoting=csv.QUOTE_NONE)
+
+        assert len(list(risk_data)) > 0
+
+    with open(experiment_files_out_file, newline="") as f:
+        risk_data = csv.reader(f, quoting=csv.QUOTE_NONE)
+
+        assert len(list(risk_data)) > 0
+
+    with open(experiment_methods_out_file, newline="") as f:
+        risk_data = csv.reader(f, quoting=csv.QUOTE_NONE)
+
+        assert len(list(risk_data)) > 0

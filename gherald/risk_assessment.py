@@ -87,7 +87,8 @@ def read_commit_code(commit_code_changes_file):
     return code_df
 
 
-def preprocess_data(commits_df, commits_filtered_df, bug_inducing_commit_file, commit_modified_files):
+def preprocess_data(commits_file, filtered_commits_file, bug_inducing_commit_file, commit_modified_files):
+    commits_df, commits_filtered_df = read_filtered_commits(commits_file, filtered_commits_file)
     bug_inducing_commits = pd.read_csv(bug_inducing_commit_file)
 
     def get_inducing_commits(obj):
@@ -235,7 +236,13 @@ def preprocess_data(commits_df, commits_filtered_df, bug_inducing_commit_file, c
 
 
 def risk_assessment(
-    commits_file, filtered_commits_file, commit_code_changes_file, bug_inducing_commit_file, commit_modified_files
+    commits_file,
+    filtered_commits_file,
+    commit_code_changes_file,
+    bug_inducing_commit_file,
+    commit_modified_files,
+    file_risk_data_output_file,
+    method_risk_data_output_file,
 ):
     commits_df, commits_filtered_df = read_filtered_commits(commits_file, filtered_commits_file)
     code_df = read_commit_code(commit_code_changes_file)
@@ -622,17 +629,20 @@ def risk_assessment(
         lambda x: x if x < 1 else 1
     )
 
-    return data_file_df, data_method_df
+    data_file_df.to_csv(file_risk_data_output_file, index=False)
+    data_method_df.to_csv(method_risk_data_output_file, index=False)
 
 
 def prepare_experiment_commit_data(
-    data_file_df,
-    data_method_df,
+    file_risk_data_output_file,
+    method_risk_data_output_file,
     experiment_changes_out_file,
     experiment_files_out_file,
     experiment_methods_out_file,
     experiment_data,
 ):
+    data_file_df = pd.read_csv(file_risk_data_output_file)
+    data_method_df = pd.read_csv(method_risk_data_output_file)
     experiment_files_df = data_file_df[data_file_df.id.isin(experiment_data["id"])]
     experiment_files_df = pd.merge(experiment_files_df, pd.DataFrame(experiment_data), how="left", on=["id"])
     experiment_files_df = experiment_files_df.rename(columns={"id": "commit_id"})
