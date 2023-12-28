@@ -17,19 +17,18 @@ This module contains all the classes regarding a specific commit, such as
 Commit, Modification,
 ModificationType and Method.
 """
-import logging
-from _datetime import datetime
-from enum import Enum
-from pathlib import Path
-from typing import List, Set, Dict, Tuple, Optional
+from typing import Dict, List, Optional, Set, Tuple
 
 import hashlib
+import logging
+from enum import Enum
+from pathlib import Path
 
 import lizard
 import lizard_languages
-from git import Diff, Git, NULL_TREE
+from _datetime import datetime
+from git import NULL_TREE, Diff, Git
 from git.objects import Commit as GitCommit
-
 from pydriller.domain.developer import Developer
 
 logger = logging.getLogger(__name__)
@@ -141,9 +140,7 @@ class Method:
         if dmm_prop is DMMProperty.UNIT_COMPLEXITY:
             return self.complexity <= Method.UNIT_COMPLEXITY_LOW_RISK_THRESHOLD
         assert dmm_prop is DMMProperty.UNIT_INTERFACING
-        return (
-            len(self.parameters) <= Method.UNIT_INTERFACING_LOW_RISK_THRESHOLD
-        )
+        return len(self.parameters) <= Method.UNIT_INTERFACING_LOW_RISK_THRESHOLD
 
 
 class ModifiedFile:
@@ -339,9 +336,7 @@ class ModifiedFile:
         token = line.split(" ")
         numbers_old_file = token[1]
         numbers_new_file = token[2]
-        delete_line_number = (
-            int(numbers_old_file.split(",")[0].replace("-", "")) - 1
-        )
+        delete_line_number = int(numbers_old_file.split(",")[0].replace("-", "")) - 1
         additions_line_number = int(numbers_new_file.split(",")[0]) - 1
         return delete_line_number, additions_line_number
 
@@ -383,26 +378,14 @@ class ModifiedFile:
         added = self.diff_parsed["added"]
         deleted = self.diff_parsed["deleted"]
 
-        methods_changed_new = {
-            y
-            for x in added
-            for y in new_methods
-            if y.start_line <= x[0] <= y.end_line
-        }
-        methods_changed_old = {
-            y
-            for x in deleted
-            for y in old_methods
-            if y.start_line <= x[0] <= y.end_line
-        }
+        methods_changed_new = {y for x in added for y in new_methods if y.start_line <= x[0] <= y.end_line}
+        methods_changed_old = {y for x in deleted for y in old_methods if y.start_line <= x[0] <= y.end_line}
 
         # return list(methods_changed_old)
         return list(methods_changed_new.union(methods_changed_old))
 
     @staticmethod
-    def _risk_profile(
-        methods: List[Method], dmm_prop: DMMProperty
-    ) -> Tuple[int, int]:
+    def _risk_profile(methods: List[Method], dmm_prop: DMMProperty) -> Tuple[int, int]:
         """
         Return the risk profile of the set of methods, with two bins: risky, or non risky.
         The risk profile is a pair (v_low, v_high), where
@@ -427,9 +410,7 @@ class ModifiedFile:
         :return: total delta risk profile for this property.
         """
         assert self.language_supported
-        low_before, high_before = self._risk_profile(
-            self.methods_before, dmm_prop
-        )
+        low_before, high_before = self._risk_profile(self.methods_before, dmm_prop)
         low_after, high_after = self._risk_profile(self.methods, dmm_prop)
         return low_after - low_before, high_after - high_before
 
@@ -442,9 +423,7 @@ class ModifiedFile:
             return
 
         if self.source_code and self._nloc is None:
-            analysis = lizard.analyze_file.analyze_source_code(
-                self.filename, self.source_code
-            )
+            analysis = lizard.analyze_file.analyze_source_code(self.filename, self.source_code)
             self._nloc = analysis.nloc
             self._complexity = analysis.CCN
             self._token_count = analysis.token_count
@@ -452,14 +431,8 @@ class ModifiedFile:
             for func in analysis.function_list:
                 self._function_list.append(Method(func))
 
-        if (
-            include_before
-            and self.source_code_before
-            and not self._function_list_before
-        ):
-            anal = lizard.analyze_file.analyze_source_code(
-                self.filename, self.source_code_before
-            )
+        if include_before and self.source_code_before and not self._function_list_before:
+            anal = lizard.analyze_file.analyze_source_code(self.filename, self.source_code_before)
 
             self._function_list_before = [Method(x) for x in anal.function_list]
 
@@ -519,9 +492,7 @@ class Commit:
 
         :return: author
         """
-        return Developer(
-            self._c_object.author.name, self._c_object.author.email
-        )
+        return Developer(self._c_object.author.name, self._c_object.author.email)
 
     @property
     def committer(self) -> Developer:
@@ -530,9 +501,7 @@ class Commit:
 
         :return: committer
         """
-        return Developer(
-            self._c_object.committer.name, self._c_object.committer.email
-        )
+        return Developer(self._c_object.committer.name, self._c_object.committer.email)
 
     @property
     def project_name(self) -> str:
@@ -680,9 +649,7 @@ class Commit:
 
         if len(self.parents) == 1:
             # the commit has a parent
-            diff_index = self._c_object.parents[0].diff(
-                self._c_object, create_patch=True, **options
-            )
+            diff_index = self._c_object.parents[0].diff(self._c_object, create_patch=True, **options)
         elif len(self.parents) > 1:
             # if it's a merge commit, the modified files of the commit are the
             # conflicts. This because if the file is not in conflict,
@@ -695,15 +662,11 @@ class Commit:
             # d = c_git.diff_tree("--cc", commit.hexsha, '-r', '--abbrev=40',
             #                     '--full-index', '-M', '-p', '--no-color')
             # diff_index = []
-            diff_index = self._c_object.parents[0].diff(
-                self._c_object, create_patch=True, **options
-            )
+            diff_index = self._c_object.parents[0].diff(self._c_object, create_patch=True, **options)
         else:
             # this is the first commit of the repo. Comparing it with git
             # NULL TREE
-            diff_index = self._c_object.diff(
-                NULL_TREE, create_patch=True, **options
-            )
+            diff_index = self._c_object.diff(NULL_TREE, create_patch=True, **options)
 
         return self._parse_diff(diff_index)
 
@@ -720,9 +683,7 @@ class Commit:
                 "source_code": self._get_decoded_sc_str(diff.b_blob),
             }
 
-            modified_files_list.append(
-                ModifiedFile(old_path, new_path, change_type, diff_and_sc)
-            )
+            modified_files_list.append(ModifiedFile(old_path, new_path, change_type, diff_and_sc))
 
         return modified_files_list
 
@@ -850,9 +811,7 @@ class Commit:
             return self._good_change_proportion(delta_low, delta_high)
         return None
 
-    def _delta_risk_profile(
-        self, dmm_prop: DMMProperty
-    ) -> Optional[Tuple[int, int]]:
+    def _delta_risk_profile(self, dmm_prop: DMMProperty) -> Optional[Tuple[int, int]]:
         """
         Return the delta risk profile of this commit, which a pair (dv1, dv2), where
         dv1 is the total change in volume (lines of code) of low risk methods, and
@@ -861,23 +820,16 @@ class Commit:
         :param dmm_prop: Property indicating the type of risk
         :return: total delta risk profile for this commit.
         """
-        supported_modifications = [
-            mod for mod in self.modified_files if mod.language_supported
-        ]
+        supported_modifications = [mod for mod in self.modified_files if mod.language_supported]
         if supported_modifications:
-            deltas = [
-                mod._delta_risk_profile(dmm_prop)
-                for mod in supported_modifications
-            ]
+            deltas = [mod._delta_risk_profile(dmm_prop) for mod in supported_modifications]
             delta_low = sum(dlow for (dlow, dhigh) in deltas)
             delta_high = sum(dhigh for (dlow, dhigh) in deltas)
             return delta_low, delta_high
         return None
 
     @staticmethod
-    def _good_change_proportion(
-        low_risk_delta: int, high_risk_delta: int
-    ) -> Optional[float]:
+    def _good_change_proportion(low_risk_delta: int, high_risk_delta: int) -> Optional[float]:
         """
         Given a delta risk profile, compute the proportion of "good" change in the total change.
         Increasing low risk code, or decreasing high risk code, is considered good.

@@ -19,13 +19,16 @@ class CodeChurn(ProcessMetric):
     * average code churn per commit.
     """
 
-    def __init__(self, path_to_repo: str,
-                 since=None,
-                 to=None,
-                 from_commit: str = None,
-                 to_commit: str = None,
-                 ignore_added_files=False,
-                 add_deleted_lines_to_churn=False):
+    def __init__(
+        self,
+        path_to_repo: str,
+        since=None,
+        to=None,
+        from_commit: str = None,
+        to_commit: str = None,
+        ignore_added_files=False,
+        add_deleted_lines_to_churn=False,
+    ):
         """
         :ignore_added_files: if True, do not count churns for files when created
         :add_deleted_lines_to_churn: if True, also add deleted lines to churn calculation

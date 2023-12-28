@@ -16,8 +16,8 @@ from gherald.data_pipeline import (
 from gherald.risk_assessment import (
     prepare_experiment_commit_data,
     preprocess_data,
-    read_commit_code,
     read_all_commits,
+    read_commit_code,
     read_filtered_commits,
     risk_assessment,
 )
@@ -242,9 +242,11 @@ def experiment_data():
     experiment_data = {"id": experiment_commits, "practice": practice, "bug_count": bug_count}
     return experiment_data
 
+
 def test_read_all_commits(commits_output_file):
     commits_df = read_all_commits(commits_output_file)
     assert not commits_df.empty
+
 
 def test_read_filtered_commits(filtered_commits_output_file):
     commits_filtered_df = read_filtered_commits(filtered_commits_output_file)

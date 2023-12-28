@@ -19,11 +19,7 @@ class ContributorsCount(ProcessMetric):
       authored less than 5% of code of a file.
     """
 
-    def __init__(self, path_to_repo: str,
-                 since=None,
-                 to=None,
-                 from_commit: str = None,
-                 to_commit: str = None):
+    def __init__(self, path_to_repo: str, since=None, to=None, from_commit: str = None, to_commit: str = None):
 
         super().__init__(path_to_repo, since=since, to=to, from_commit=from_commit, to_commit=to_commit)
         self._initialize()
@@ -39,8 +35,7 @@ class ContributorsCount(ProcessMetric):
 
             for modified_file in commit.modified_files:
 
-                filepath = renamed_files.get(modified_file.new_path,
-                                             modified_file.new_path)
+                filepath = renamed_files.get(modified_file.new_path, modified_file.new_path)
 
                 if modified_file.change_type == ModificationType.RENAME:
                     renamed_files[modified_file.old_path] = filepath
@@ -57,9 +52,7 @@ class ContributorsCount(ProcessMetric):
                 del self.contributors[path]
             else:
                 contributors_count = len(contributions.values())
-                minor_contributors_count = sum(1
-                                               for v in contributions.values()
-                                               if v/total < .05)
+                minor_contributors_count = sum(1 for v in contributions.values() if v / total < 0.05)
 
                 self.contributors[path] = contributors_count
                 self.minor_contributors[path] = minor_contributors_count

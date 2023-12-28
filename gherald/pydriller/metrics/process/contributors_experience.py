@@ -28,8 +28,7 @@ class ContributorsExperience(ProcessMetric):
 
             for modified_file in commit.modified_files:
 
-                filepath = renamed_files.get(modified_file.new_path,
-                                             modified_file.new_path)
+                filepath = renamed_files.get(modified_file.new_path, modified_file.new_path)
 
                 if modified_file.change_type == ModificationType.RENAME:
                     renamed_files[modified_file.old_path] = filepath
@@ -38,14 +37,13 @@ class ContributorsExperience(ProcessMetric):
                 lines_authored = modified_file.added_lines + modified_file.deleted_lines
 
                 files[filepath] = files.get(filepath, {})
-                files[filepath][author] = files[filepath].get(author, 0) + \
-                    lines_authored
+                files[filepath][author] = files[filepath].get(author, 0) + lines_authored
 
         for path, contributions in list(files.items()):
             total = sum(contributions.values())
             if total == 0:
                 del files[path]
             else:
-                files[path] = round(100*max(contributions.values()) / total, 2)
+                files[path] = round(100 * max(contributions.values()) / total, 2)
 
         return files

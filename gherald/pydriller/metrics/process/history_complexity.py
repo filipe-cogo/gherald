@@ -47,8 +47,7 @@ class HistoryComplexity(ProcessMetric):
         for commit in self.repo_miner.traverse_commits():
 
             for modified_file in commit.modified_files:
-                filepath = renamed_files.get(modified_file.new_path,
-                                             modified_file.new_path)
+                filepath = renamed_files.get(modified_file.new_path, modified_file.new_path)
 
                 if modified_file.change_type == ModificationType.RENAME:
                     renamed_files[modified_file.old_path] = filepath
@@ -70,7 +69,7 @@ class HistoryComplexity(ProcessMetric):
         # Normalized entropy
         entropy = 0
         if len(files.values()) > 1:
-            entropy = -sum(p*log(p+1/1e10, n_files) for p in files.values())
+            entropy = -sum(p * log(p + 1 / 1e10, n_files) for p in files.values())
 
         for filepath in files:
             files[filepath] *= entropy

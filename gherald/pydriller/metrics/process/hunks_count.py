@@ -31,8 +31,7 @@ class HunksCount(ProcessMetric):
 
             for modified_file in commit.modified_files:
 
-                filepath = renamed_files.get(modified_file.new_path,
-                                             modified_file.new_path)
+                filepath = renamed_files.get(modified_file.new_path, modified_file.new_path)
 
                 if modified_file.change_type == ModificationType.RENAME:
                     renamed_files[modified_file.old_path] = filepath
@@ -42,7 +41,7 @@ class HunksCount(ProcessMetric):
                 hunks = 0
 
                 for line in diff.splitlines():
-                    if line.startswith('+') or line.startswith('-'):
+                    if line.startswith("+") or line.startswith("-"):
                         if not is_hunk:
                             is_hunk = True
                             hunks += 1

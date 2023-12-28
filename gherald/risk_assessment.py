@@ -8,11 +8,13 @@ from pandarallel import pandarallel
 
 pandarallel.initialize()
 
+
 def read_all_commits(commits_file):
     commits_df = pd.read_csv(commits_file)
     commits_df = commits_df[["id", "author_date", "author_email"]]
     commits_df["author_date_ts"] = commits_df["author_date"].apply(lambda x: int(pd.Timestamp(x).timestamp()))
     return commits_df
+
 
 def read_filtered_commits(filtered_commits_file):
     commits_filtered_df = pd.read_csv(filtered_commits_file)
@@ -87,7 +89,9 @@ def read_commit_code(commit_code_changes_file):
     return code_df
 
 
-def preprocess_data(commits_file, filtered_commits_file, commit_code_changes_file, bug_inducing_commit_file, commit_modified_files):
+def preprocess_data(
+    commits_file, filtered_commits_file, commit_code_changes_file, bug_inducing_commit_file, commit_modified_files
+):
     commits_df = read_all_commits(commits_file)
     commits_filtered_df = read_filtered_commits(filtered_commits_file)
     code_df = read_commit_code(commit_code_changes_file)
@@ -255,7 +259,9 @@ def risk_assessment(
         commits_df_files_expanded,
         commits_df_methods_expanded,
         data_df,
-    ) = preprocess_data(commits_file, filtered_commits_file, commit_code_changes_file, bug_inducing_commit_file, commit_modified_files)
+    ) = preprocess_data(
+        commits_file, filtered_commits_file, commit_code_changes_file, bug_inducing_commit_file, commit_modified_files
+    )
 
     def get_author_prior_changes(row):
         author_email = row["author_email"]

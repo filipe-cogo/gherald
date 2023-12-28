@@ -20,8 +20,7 @@ class CommitsCount(ProcessMetric):
 
             for modified_file in commit.modified_files:
 
-                filepath = renamed_files.get(modified_file.new_path,
-                                             modified_file.new_path)
+                filepath = renamed_files.get(modified_file.new_path, modified_file.new_path)
                 if modified_file.change_type == ModificationType.RENAME:
                     renamed_files[modified_file.old_path] = filepath
 
