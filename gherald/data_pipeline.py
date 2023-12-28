@@ -13,7 +13,8 @@ import pandas as pd
 import requests
 from nltk.tokenize import word_tokenize
 from pandarallel import pandarallel
-from pydriller import Git, Repository
+from .pydriller.git import Git
+from .pydriller.repository import Repository
 
 pandarallel.initialize()
 nltk.download("punkt")
@@ -359,7 +360,7 @@ def data_filtering(
         bug_inducing_ids = set()
         for _, ids in obj.items():
             for value in ids:
-                id = value
+                id = value[0]
                 if id not in bug_inducing_ids:
                     bug_inducing_ids.add(id)
         return list(bug_inducing_ids)

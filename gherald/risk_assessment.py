@@ -8,16 +8,16 @@ from pandarallel import pandarallel
 
 pandarallel.initialize()
 
-
-def read_filtered_commits(commits_file, filtered_commits_file):
+def read_all_commits(commits_file):
     commits_df = pd.read_csv(commits_file)
     commits_df = commits_df[["id", "author_date", "author_email"]]
     commits_df["author_date_ts"] = commits_df["author_date"].apply(lambda x: int(pd.Timestamp(x).timestamp()))
+    return commits_df
 
+def read_filtered_commits(filtered_commits_file):
     commits_filtered_df = pd.read_csv(filtered_commits_file)
     commits_filtered_df["author_date"] = pd.to_datetime(commits_filtered_df["author_date"])
-
-    return commits_df, commits_filtered_df
+    return commits_filtered_df
 
 
 def read_commit_code(commit_code_changes_file):
@@ -87,8 +87,12 @@ def read_commit_code(commit_code_changes_file):
     return code_df
 
 
-def preprocess_data(commits_file, filtered_commits_file, bug_inducing_commit_file, commit_modified_files):
-    commits_df, commits_filtered_df = read_filtered_commits(commits_file, filtered_commits_file)
+def preprocess_data(commits_file, filtered_commits_file, commit_code_changes_file, bug_inducing_commit_file, commit_modified_files):
+    commits_df = read_all_commits(commits_file)
+    commits_filtered_df = read_filtered_commits(filtered_commits_file)
+    code_df = read_commit_code(commit_code_changes_file)
+    commits_filtered_df = commits_filtered_df.drop(columns=["additions", "deletions"])
+    commits_filtered_df = pd.merge(commits_filtered_df, code_df, how="left", on="id")
     bug_inducing_commits = pd.read_csv(bug_inducing_commit_file)
 
     def get_inducing_commits(obj):
@@ -244,17 +248,14 @@ def risk_assessment(
     file_risk_data_output_file,
     method_risk_data_output_file,
 ):
-    commits_df, commits_filtered_df = read_filtered_commits(commits_file, filtered_commits_file)
-    code_df = read_commit_code(commit_code_changes_file)
-    commits_filtered_df = commits_filtered_df.drop(columns=["additions", "deletions"])
-    commits_filtered_df = pd.merge(commits_filtered_df, code_df, how="left", on="id")
+    commits_df = read_all_commits(commits_file)
     (
         bug_inducing_files,
         bug_inducing_methods,
         commits_df_files_expanded,
         commits_df_methods_expanded,
         data_df,
-    ) = preprocess_data(commits_df, commits_filtered_df, bug_inducing_commit_file, commit_modified_files)
+    ) = preprocess_data(commits_file, filtered_commits_file, commit_code_changes_file, bug_inducing_commit_file, commit_modified_files)
 
     def get_author_prior_changes(row):
         author_email = row["author_email"]
@@ -650,6 +651,49 @@ def prepare_experiment_commit_data(
     experiment_methods_df = pd.merge(experiment_methods_df, pd.DataFrame(experiment_data), how="left", on=["id"])
     experiment_methods_df = experiment_methods_df.rename(columns={"id": "commit_id"})
 
+    experiment_changes_df = pd.merge(
+        experiment_files_df,
+        experiment_methods_df[["commit_id", "method_risk_score_relative"]].drop_duplicates(),
+        how="left",
+        on="commit_id",
+    )
+    experiment_changes_df["risk_score"] = (
+        experiment_changes_df["author_risk_score"]
+        + experiment_changes_df["file_risk_score_relative"]
+        + experiment_changes_df["method_risk_score_relative"]
+    )
+    experiment_changes_df["bug_density"] = experiment_changes_df["bug_count"] / (
+        experiment_changes_df["additions"] + experiment_changes_df["deletions"]
+    )
+
+    experiment_changes_df = experiment_changes_df.sort_values(by="risk_score", ascending=False)
+    experiment_changes_df = experiment_changes_df[
+        [
+            "commit_id",
+            "author_email",
+            "author_date",
+            "additions",
+            "deletions",
+            "bug_count",
+            "author_prior_bugs",
+            "author_risk_score",
+            "file_risk_score_relative",
+            "method_risk_score_relative",
+            "practice",
+            "risk_score",
+            "bug_density",
+            "author_prior_change_score",
+            "author_recent_change_score",
+            "author_file_awareness",
+            "author_file_prior_changes",
+            "author_prior_changes",
+            "author_recent_changes",
+        ]
+    ]
+    experiment_changes_df = experiment_changes_df.drop_duplicates()
+
+    experiment_changes_df.to_csv(experiment_changes_out_file, index=False)
+
     experiment_methods_df = experiment_methods_df[
         [
             "commit_id",
@@ -693,46 +737,3 @@ def prepare_experiment_commit_data(
     experiment_files_df = experiment_files_df.drop_duplicates()
     experiment_files_df = experiment_files_df.reset_index(drop=True)
     experiment_files_df.to_csv(experiment_files_out_file, index=False)
-
-    experiment_changes_df = pd.merge(
-        experiment_files_df,
-        experiment_methods_df[["commit_id", "method_risk_score_relative"]].drop_duplicates(),
-        how="left",
-        on="commit_id",
-    )
-    experiment_changes_df["risk_score"] = (
-        experiment_changes_df["author_risk_score"]
-        + experiment_changes_df["file_risk_score_relative"]
-        + experiment_changes_df["method_risk_score_relative"]
-    )
-    experiment_changes_df["bug_density"] = experiment_changes_df["bug_count"] / (
-        experiment_changes_df["additions"] + experiment_changes_df["deletions"]
-    )
-
-    experiment_changes_df = experiment_changes_df.sort_values(by="risk_score", ascending=False)
-    experiment_changes_df = experiment_changes_df[
-        [
-            "commit_id",
-            "author_email",
-            "author_date",
-            "additions",
-            "deletions",
-            "bug_count",
-            "author_prior_bugs",
-            "author_risk_score",
-            "file_risk_score_relative",
-            "method_risk_score_relative",
-            "practice",
-            "risk_score",
-            "bug_density",
-            "author_prior_change_score",
-            "author_recent_change_score",
-            "author_file_awareness",
-            "author_file_prior_changes",
-            "author_prior_changes",
-            "author_recent_changes",
-        ]
-    ]
-    experiment_changes_df = experiment_changes_df.drop_duplicates()
-
-    experiment_changes_df.to_csv(experiment_changes_out_file, index=False)
